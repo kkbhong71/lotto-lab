@@ -1,0 +1,1404 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>LOTTO LAB — INTEGRATED v2.0</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+KR:wght@400;500;700&family=IBM+Plex+Mono:wght@500;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --ink:#10141F; --panel:#1A2133; --panel-2:#151B2B; --line:#2B3450;
+  --paper:#EAEDF6; --dim:#8D96AF; --faint:#5A6580;
+  --b1:#FBC400; --b2:#69C8F2; --b3:#FF7272; --b4:#AEB8C4; --b5:#B0D840;
+  --ok:#B0D840; --warn:#FBC400; --bad:#FF7272;
+  --sans:'IBM Plex Sans KR',-apple-system,'Malgun Gothic',sans-serif;
+  --mono:'IBM Plex Mono','SFMono-Regular',Consolas,monospace;
+}
+*{margin:0;padding:0;box-sizing:border-box}
+html{background:var(--ink)}
+body{
+  font-family:var(--sans); color:var(--paper); background:var(--ink);
+  min-height:100vh; line-height:1.6; font-size:15px;
+  padding:0 20px 80px;
+}
+.wrap{max-width:960px;margin:0 auto}
+
+/* ── 헤더 ── */
+header{padding:34px 0 22px;border-bottom:1px solid var(--line);margin-bottom:26px}
+.brand{display:flex;align-items:baseline;gap:14px;flex-wrap:wrap}
+.brand h1{font-size:26px;font-weight:700;letter-spacing:-.5px}
+.brand h1 .v{font-family:var(--mono);font-size:13px;color:var(--dim);font-weight:500;margin-left:8px}
+.brand .dots{display:inline-flex;gap:5px;transform:translateY(-2px)}
+.brand .dots i{width:11px;height:11px;border-radius:50%;display:inline-block}
+.honesty{
+  margin-top:10px;font-size:13px;color:var(--dim);
+  border-left:3px solid var(--line);padding-left:12px;
+}
+.honesty b{color:var(--paper);font-weight:500}
+
+/* ── 카드 공통 ── */
+section{background:var(--panel);border:1px solid var(--line);border-radius:14px;
+  padding:22px 24px;margin-bottom:18px}
+section h2{font-size:15px;font-weight:700;letter-spacing:.3px;margin-bottom:4px;
+  display:flex;align-items:center;gap:8px}
+section h2 .tag{font-family:var(--mono);font-size:11px;font-weight:500;
+  color:var(--faint);letter-spacing:1px}
+section .sub{font-size:13px;color:var(--dim);margin-bottom:16px}
+.hide{display:none!important}
+
+/* ── 드롭존 ── */
+#dropzone{
+  border:2px dashed var(--line);border-radius:14px;background:var(--panel-2);
+  padding:56px 24px;text-align:center;cursor:pointer;
+  transition:border-color .15s, background .15s;margin-bottom:18px;
+}
+#dropzone.hover{border-color:var(--b2);background:#1a2440}
+#dropzone .big{font-size:19px;font-weight:700;margin-bottom:6px}
+#dropzone .small{font-size:13px;color:var(--dim)}
+#dropzone .small code{font-family:var(--mono);color:var(--b2);font-size:12px}
+#dropzone.compact{padding:14px 20px;display:flex;align-items:center;gap:14px;text-align:left}
+#dropzone.compact .big{font-size:14px;margin:0}
+#dropzone.compact .small{margin:0}
+
+/* ── 상태 리포트 ── */
+#report{font-family:var(--mono);font-size:12.5px;color:var(--dim);line-height:1.9}
+#report .ok{color:var(--ok)}
+.statline{display:flex;gap:26px;flex-wrap:wrap;margin-top:12px}
+.statline .kv .k{font-size:11.5px;color:var(--faint);letter-spacing:.5px}
+.statline .kv .v{font-family:var(--mono);font-size:19px;font-weight:700}
+
+/* ── 볼 ── */
+.ball{
+  width:38px;height:38px;border-radius:50%;display:inline-flex;
+  align-items:center;justify-content:center;position:relative;
+  font-family:var(--mono);font-weight:700;font-size:14px;color:#1a1a1a;
+  background:radial-gradient(circle at 32% 28%, #fff 0 8%, var(--bc) 46%, color-mix(in srgb, var(--bc) 62%, #000) 100%);
+  box-shadow:inset -2px -3px 6px rgba(0,0,0,.28), 0 2px 4px rgba(0,0,0,.35);
+  flex:0 0 auto;
+}
+.ball::after{content:'';position:absolute;inset:26%;border-radius:50%;
+  background:rgba(255,255,255,.85)}
+.ball span{position:relative;z-index:1}
+.z1{--bc:var(--b1)} .z2{--bc:var(--b2)} .z3{--bc:var(--b3)}
+.z4{--bc:var(--b4)} .z5{--bc:var(--b5)}
+
+/* ── 추적 성과 ── */
+#trackAlert{font-size:13.5px;padding:10px 14px;border-radius:9px;margin-bottom:14px;
+  background:#20304a;border:1px solid #33507a;color:var(--b2);font-family:var(--mono)}
+#trackAlert.hide{display:none}
+.track-grid{display:flex;gap:26px;flex-wrap:wrap;align-items:flex-end}
+.verdict{
+  font-family:var(--mono);font-size:13px;padding:9px 13px;border-radius:9px;
+  border:1px solid var(--line);background:var(--panel-2);margin-top:14px;
+}
+.verdict.tie{color:var(--b4)} .verdict.win{color:var(--ok)} .verdict.lose{color:var(--bad)}
+.goalbar{margin-top:14px}
+.goalbar .lbl{display:flex;justify-content:space-between;font-size:12px;color:var(--dim);margin-bottom:5px}
+.goalbar .rail{height:7px;background:var(--panel-2);border-radius:4px;overflow:hidden}
+.goalbar .fill{height:100%;background:linear-gradient(90deg,var(--b2),var(--b5));border-radius:4px;width:0%}
+
+/* ── 예측 세트 ── */
+.setrow{display:flex;align-items:center;gap:12px;padding:11px 0;border-bottom:1px solid var(--panel-2);flex-wrap:wrap}
+.setrow:last-child{border-bottom:none}
+.setrow .no{font-family:var(--mono);font-size:12px;color:var(--faint);width:38px}
+.setrow .balls{display:flex;gap:7px}
+.setrow .meta{font-family:var(--mono);font-size:11.5px;color:var(--dim);margin-left:auto;text-align:right;line-height:1.5}
+.toolbar{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-bottom:14px}
+.toolbar label{font-size:12.5px;color:var(--dim)}
+input[type=number]{
+  font-family:var(--mono);background:var(--panel-2);border:1px solid var(--line);
+  color:var(--paper);border-radius:8px;padding:7px 10px;width:90px;font-size:13px}
+button{
+  font-family:var(--sans);font-size:13px;font-weight:500;cursor:pointer;
+  background:var(--panel-2);color:var(--paper);border:1px solid var(--line);
+  border-radius:9px;padding:8px 15px;transition:background .12s,border-color .12s}
+button:hover{background:#222b44;border-color:#3a4668}
+button.primary{background:#27406b;border-color:#3a5c96;color:#dbe8ff}
+button.primary:hover{background:#2d4b7e}
+button:disabled{opacity:.45;cursor:default}
+#logNotice{font-family:var(--mono);font-size:12.5px;color:var(--dim);margin-top:12px}
+
+/* ── 스코어 보드 (시그니처) ── */
+#board{display:grid;grid-template-columns:repeat(9,1fr);gap:10px;justify-items:center;margin-top:6px}
+#board .cell{display:flex;flex-direction:column;align-items:center;gap:4px}
+#board .cell .sc{font-family:var(--mono);font-size:10px;color:var(--faint)}
+#board .ball{transition:opacity .3s, box-shadow .3s}
+#board .ball.hot{box-shadow:inset -2px -3px 6px rgba(0,0,0,.28),0 0 14px color-mix(in srgb,var(--bc) 70%,transparent),0 2px 4px rgba(0,0,0,.35)}
+.legend{display:flex;gap:16px;flex-wrap:wrap;margin-top:16px;font-size:12px;color:var(--dim)}
+.legend i{width:10px;height:10px;border-radius:50%;display:inline-block;margin-right:5px;transform:translateY(1px)}
+
+/* ── 백테스트 ── */
+.progress{height:9px;background:var(--panel-2);border-radius:5px;overflow:hidden;margin:14px 0 6px}
+.progress .fill{height:100%;background:linear-gradient(90deg,var(--b1),var(--b3));width:0%;transition:width .1s}
+#btStatus{font-family:var(--mono);font-size:12px;color:var(--dim)}
+table{width:100%;border-collapse:collapse;font-family:var(--mono);font-size:12.5px;margin-top:14px}
+th,td{padding:7px 10px;text-align:right;border-bottom:1px solid var(--panel-2)}
+th{color:var(--faint);font-weight:500;font-size:11.5px;letter-spacing:.5px}
+td:first-child,th:first-child{text-align:left;color:var(--dim)}
+.dist{margin-top:14px}
+.dist .row{display:flex;align-items:center;gap:10px;font-family:var(--mono);font-size:12px;margin-bottom:5px}
+.dist .row .lb{width:36px;color:var(--dim)}
+.dist .row .bar{height:11px;border-radius:3px;background:var(--b2);min-width:2px}
+.dist .row .ct{color:var(--faint);font-size:11px}
+
+/* ── 로그 ── */
+#logTableWrap{max-height:260px;overflow:auto;margin-top:6px}
+.logbtns{display:flex;gap:10px;flex-wrap:wrap;margin-top:14px}
+
+footer{margin-top:34px;padding-top:18px;border-top:1px solid var(--line);
+  font-size:12px;color:var(--faint);line-height:1.8}
+footer b{color:var(--dim);font-weight:500}
+
+@media (max-width:640px){
+  #board{grid-template-columns:repeat(5,1fr)}
+  .ball{width:34px;height:34px;font-size:13px}
+  .setrow .meta{margin-left:0;text-align:left;width:100%}
+}
+@media (prefers-reduced-motion: reduce){
+  *{transition:none!important;animation:none!important}
+}
+button:focus-visible,#dropzone:focus-visible,input:focus-visible{
+  outline:2px solid var(--b2);outline-offset:2px}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<header>
+  <div class="brand">
+    <h1>LOTTO LAB<span class="v">INTEGRATED v2.0</span></h1>
+    <span class="dots">
+      <i style="background:var(--b1)"></i><i style="background:var(--b2)"></i>
+      <i style="background:var(--b3)"></i><i style="background:var(--b4)"></i>
+      <i style="background:var(--b5)"></i>
+    </span>
+  </div>
+  <div class="honesty">
+    <b>통계 교육 도구</b>입니다. 로또는 매 회차 독립 추첨이므로 이 도구는 당첨 확률을
+    높이지 않으며, 백테스트·추적 결과가 그것을 스스로 검증해 보여줍니다.
+  </div>
+</header>
+
+<div id="dropzone" tabindex="0" role="button" aria-label="CSV 파일 업로드">
+  <div class="big">당첨번호 CSV를 여기에 놓으세요</div>
+  <div class="small">
+    <code>round, draw date, num1~num6</code> 형식 또는 동행복권 내려받기 파일 (UTF-8 · CP949 자동 인식)
+    — 클릭해서 선택할 수도 있습니다
+  </div>
+  <input type="file" id="fileInput" accept=".csv,.txt" style="display:none">
+</div>
+
+<section id="secData" class="hide">
+  <h2>데이터 <span class="tag">LOADER · 7단계 방어</span></h2>
+  <div id="report"></div>
+  <div class="statline">
+    <div class="kv"><div class="k">유효 회차</div><div class="v" id="stRounds">–</div></div>
+    <div class="kv"><div class="k">최신 회차</div><div class="v" id="stLast">–</div></div>
+    <div class="kv"><div class="k">다음 예측 대상</div><div class="v" id="stTarget">–</div></div>
+  </div>
+</section>
+
+<section id="secTrack" class="hide">
+  <h2>사전 예측 추적 <span class="tag">PREDICTION TRACKER</span></h2>
+  <div class="sub">이 브라우저에 저장된 예측 기록을 새 데이터와 자동 대조합니다. 백테스트와 달리 "그 시점에 실제로 예측했다"는 사전 등록 증거입니다.</div>
+  <div id="trackAlert" class="hide"></div>
+  <div id="trackBody"></div>
+</section>
+
+<section id="secPredict" class="hide">
+  <h2>이번 회차 예측 <span class="tag">ENSEMBLE · 4 ALGORITHMS</span></h2>
+  <div class="sub">가중치·구간균형·동반출현·다중클러스터 알고리즘 → 12종 필터 → 클러스터 쿼터 커버리지 선정</div>
+  <div class="toolbar">
+    <label>seed <input type="number" id="seedInput" value="42"></label>
+    <button id="btnRegen">다시 생성</button>
+    <button id="btnCopyAll" class="primary">전체 복사</button>
+  </div>
+  <div id="setList"></div>
+  <div id="logNotice"></div>
+</section>
+
+<section id="secBoard" class="hide">
+  <h2>스코어 보드 <span class="tag">45-BALL ENGINE HEATMAP</span></h2>
+  <div class="sub">엔진 최종 점수(빈도·최근성·간격·페어·모멘텀·구간)가 높을수록 볼이 선명하게 빛납니다. 색은 공식 볼 구간색입니다.</div>
+  <div id="board"></div>
+  <div class="legend">
+    <span><i style="background:var(--b1)"></i>1–10</span>
+    <span><i style="background:var(--b2)"></i>11–20</span>
+    <span><i style="background:var(--b3)"></i>21–30</span>
+    <span><i style="background:var(--b4)"></i>31–40</span>
+    <span><i style="background:var(--b5)"></i>41–45</span>
+  </div>
+</section>
+
+<section id="secBacktest" class="hide">
+  <h2>백테스트 <span class="tag">WALK-FORWARD + 랜덤 대조군</span></h2>
+  <div class="sub">각 검증 회차마다 그 이전 데이터만으로 엔진을 재구성해 예측하고(누수 없음), 같은 회차에 랜덤 100세트를 함께 던져 공정 비교합니다.</div>
+  <div class="toolbar">
+    <label>검증 회차
+      <select id="btRounds" style="font-family:var(--mono);background:var(--panel-2);border:1px solid var(--line);color:var(--paper);border-radius:8px;padding:7px 10px;font-size:13px">
+        <option value="10">10</option><option value="20" selected>20</option><option value="50">50</option>
+      </select>
+    </label>
+    <button id="btnBacktest" class="primary">백테스트 실행</button>
+  </div>
+  <div class="progress hide" id="btProgress"><div class="fill"></div></div>
+  <div id="btStatus"></div>
+  <div id="btResult"></div>
+</section>
+
+<section id="secLog" class="hide">
+  <h2>예측 로그 <span class="tag">localStorage</span></h2>
+  <div class="sub">기록은 이 브라우저에만 저장됩니다. 다른 기기와 공유하거나 백업하려면 CSV로 내보내세요.</div>
+  <div id="logTableWrap"></div>
+  <div class="logbtns">
+    <button id="btnExport">CSV 내보내기</button>
+    <button id="btnImport">CSV 가져오기</button>
+    <input type="file" id="importInput" accept=".csv" style="display:none">
+    <button id="btnReset">기록 전체 삭제</button>
+  </div>
+</section>
+
+<footer>
+  <b>LOTTO LAB — INTEGRATED v2.0</b> · Python 레퍼런스(INTEGRATED v1.1)와 수치 교차 검증된 JavaScript 엔진<br>
+  Oseong Vibe Coding EduHub · 교육용 오픈 도구 · 이 도구의 어떤 출력도 당첨을 보장하지 않습니다.
+</footer>
+
+</div>
+
+<script>
+/* =============================================================================
+ * LOTTO INTEGRATED LAB v2.0 — Engine (JavaScript port of INTEGRATED v1.1)
+ * =============================================================================
+ * Python 원본: lotto_integrated_v1_1.py
+ *  - DataEngine (frequency/gap/pair/momentum/zone/pattern → final_scores)
+ *  - GeometricAnalyzer (간이 클러스터링: 합계 3분위 — v3.4 폴백 사양)
+ *  - FilterSystem (12종 필터)
+ *  - EnsembleGenerator (4알고리즘 + 클러스터 쿼터 pool + 커버리지 선정)
+ *  - BacktestEngine (walk-forward + 랜덤 대조군 + 부트스트랩 판정)
+ *  - PredictionTracker (localStorage; node에서는 메모리 스토어)
+ * 결정적(비난수) 계산부는 Python과 소수점 수준으로 일치하도록 이식됨.
+ * ========================================================================== */
+'use strict';
+
+const PRIME_NUMBERS = new Set([2,3,5,7,11,13,17,19,23,29,31,37,41,43]);
+const RANDOM_EXPECTED = 6 * 6 / 45;   // 0.800
+const ENGINE_VERSION = 'INTEGRATED v2.0 (JS)';
+
+/* ── 수치 유틸 (numpy 동작 일치) ─────────────────────────────────────────── */
+const NU = {
+  mean(a){ return a.length ? a.reduce((s,x)=>s+x,0)/a.length : 0; },
+  variance(a){ if(!a.length) return 0; const m=NU.mean(a);
+    return a.reduce((s,x)=>s+(x-m)*(x-m),0)/a.length; },          // ddof=0
+  std(a){ return Math.sqrt(NU.variance(a)); },
+  clip(x,lo,hi){ return Math.min(hi, Math.max(lo, x)); },
+  percentile(arr,q){                                              // numpy linear
+    const a=[...arr].sort((x,y)=>x-y); const n=a.length;
+    if(!n) return 0; if(n===1) return a[0];
+    const idx=(n-1)*q/100, lo=Math.floor(idx), hi=Math.ceil(idx);
+    if(lo===hi) return a[lo];
+    return a[lo]*(hi-idx)+a[hi]*(idx-lo);
+  },
+  median(a){ return NU.percentile(a,50); },
+};
+
+/* ── 시드 RNG (mulberry32) + 표집 헬퍼 ───────────────────────────────────── */
+function makeRng(seed){
+  let a = seed >>> 0;
+  const rng = function(){
+    a |= 0; a = (a + 0x6D2B79F5) | 0;
+    let t = Math.imul(a ^ (a >>> 15), 1 | a);
+    t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
+    return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+  };
+  rng.randint = (lo, hi) => lo + Math.floor(rng() * (hi - lo));   // [lo, hi)
+  rng.choiceIndexWeighted = (weights) => {                        // 합=1 가정 불필요
+    let total = 0; for(const w of weights) total += w;
+    let r = rng() * total;
+    for(let i=0;i<weights.length;i++){ r -= weights[i]; if(r<=0) return i; }
+    return weights.length - 1;
+  };
+  rng.weightedSampleNoReplace = (items, weights, k) => {          // 순차 재정규화
+    const idx = items.map((_,i)=>i);
+    const w = weights.slice(); const out=[];
+    for(let j=0;j<k;j++){
+      let total=0; for(const i of idx) total += w[i];
+      if(total<=0) return null;
+      let r = rng()*total, pick=-1;
+      for(let t=0;t<idx.length;t++){ r -= w[idx[t]]; if(r<=0){ pick=t; break; } }
+      if(pick<0) pick = idx.length-1;
+      out.push(items[idx[pick]]);
+      idx.splice(pick,1);
+    }
+    return out;
+  };
+  rng.uniformSample = (lo, hi, k) => {                            // [lo,hi] 정수 k개
+    const pool=[]; for(let n=lo;n<=hi;n++) pool.push(n);
+    for(let i=pool.length-1;i>0;i--){ const j=rng.randint(0,i+1);
+      [pool[i],pool[j]]=[pool[j],pool[i]]; }
+    return pool.slice(0,k);
+  };
+  return rng;
+}
+
+/* ── CSV 로더 (v1.1 load_history_ex 이식: 6+1단계 방어) ─────────────────── */
+function decodeCsvBuffer(buf){
+  try { return new TextDecoder('utf-8', {fatal:true}).decode(buf); }
+  catch(e){ return new TextDecoder('euc-kr').decode(buf); }        // CP949 폴백
+}
+
+function loadHistoryEx(text){
+  const report = [];
+  const lines = text.replace(/^\uFEFF/,'').split(/\r?\n/).filter(l=>l.trim()!=='');
+  if(lines.length < 2) throw new Error('CSV에 데이터 행이 없습니다.');
+  let grid = lines.map(l => l.split(',').map(c=>c.trim()));
+  const header = grid[0]; let rows = grid.slice(1);
+  report.push(`원본 데이터: ${rows.length}행 × ${header.length}열`);
+
+  // [방어 ①] 유령 열 제거 (전체가 빈 값)
+  const keep = header.map((_,c)=> rows.some(r => (r[c]??'') !== ''));
+  const ghosts = keep.filter(k=>!k).length;
+  if(ghosts) report.push(`빈 열 ${ghosts}개 제거`);
+  const H = header.filter((_,c)=>keep[c]);
+  rows = rows.map(r => r.filter((_,c)=>keep[c]));
+
+  // [방어 ②] 빈 행 제거
+  const b2 = rows.length;
+  rows = rows.filter(r => r.some(c => (c??'') !== ''));
+  if(b2 !== rows.length) report.push(`빈 행 ${b2-rows.length}개 제거`);
+
+  // [방어 ⑦] round 열 존재 시 오름차순 정렬 (walk-forward 전제)
+  const rCol = H.findIndex(h => h.toLowerCase() === 'round' || h === '회차');
+  if(rCol >= 0){
+    rows.sort((a,b)=> (parseFloat(a[rCol])||0) - (parseFloat(b[rCol])||0));
+  }
+
+  // [방어 ③] 번호 열 선택 — num1~num6 이름 우선
+  let numCols = [];
+  const named = H.map((h,i)=>({h:h.toLowerCase(),i}))
+                 .filter(o=>/^num[1-6]$/.test(o.h)).map(o=>o.i);
+  if(named.length === 6){ numCols = named; }
+  else {
+    // 보강 휴리스틱: 연속 6열 중 "1~45 정수·행내 중복 없음" 유효율 최고 구간
+    let best = {score:-1, cols:null};
+    for(let s=0; s+6 <= H.length; s++){
+      const cols=[...Array(6)].map((_,k)=>s+k);
+      let ok=0;
+      for(const r of rows){
+        const v = cols.map(c=>parseFloat(r[c]));
+        if(v.every(x=>Number.isInteger(x)&&x>=1&&x<=45) && new Set(v).size===6) ok++;
+      }
+      const score = rows.length ? ok/rows.length : 0;
+      if(score > best.score) best = {score, cols};
+    }
+    if(!best.cols || best.score < 0.5)
+      throw new Error('번호 열(6개)을 찾지 못했습니다. CSV 구조를 확인하세요.');
+    numCols = best.cols;
+    report.push(`번호 열(자동 탐지): ${numCols.map(c=>H[c]).join(', ')}`);
+  }
+
+  // [방어 ④⑤⑥] 숫자 변환 → 결측 제외 → 규칙 검증
+  const rounds=[], history=[];
+  let badNaN=0, badRule=0;
+  for(const r of rows){
+    const v = numCols.map(c=>parseFloat(r[c]));
+    if(v.some(x=>!Number.isFinite(x))){ badNaN++; continue; }
+    const ints = v.map(x=>Math.round(x));
+    if(!(ints.every(x=>x>=1&&x<=45) && new Set(ints).size===6)){ badRule++; continue; }
+    rounds.push(rCol>=0 ? parseInt(r[rCol]) : null);
+    history.push([...ints].sort((a,b)=>a-b));
+  }
+  if(badNaN)  report.push(`결측치 포함 ${badNaN}개 행 제외`);
+  if(badRule) report.push(`규칙 위반(범위/중복) ${badRule}개 행 제외`);
+  if(!history.length) throw new Error('유효한 회차 데이터가 0건입니다.');
+  report.push(`유효 ${history.length}회차 확보`);
+  return {rounds, history, report};
+}
+
+/* ── Config (Python 기본값 동일) ─────────────────────────────────────────── */
+function defaultConfig(){
+  return {
+    SUM_RANGE:[95,200], SUM_OPTIMAL:[110,190], MIN_AC:7,
+    ODD_RATES:[2,3,4], HIGH_RATES:[2,3,4],
+    MIN_ZONES:3, MAX_PER_ZONE:3, MIN_UNIQUE_ENDINGS:3, MAX_SAME_ENDING:2,
+    PRIME_RANGE:[1,4], MAX_CONSECUTIVE:2, PREV_MATCH_RANGE:[0,3],
+    WEIGHT_FREQUENCY:0.18, WEIGHT_RECENCY:0.18, WEIGHT_GAP:0.16,
+    WEIGHT_PAIR:0.14, WEIGHT_MOMENTUM:0.20, WEIGHT_ZONE:0.14,
+    RECENT_PERIODS:[10,30,50,100], N_CLUSTERS:5,
+    CLUSTER_BONUS_WEIGHT:0.10, MAX_SET_OVERLAP:1,
+  };
+}
+
+/* ── DataEngine ──────────────────────────────────────────────────────────── */
+class DataEngine {
+  constructor(history, config){
+    this.config = config || defaultConfig();
+    this.history = history.map(r=>r.slice());
+    this.totalRounds = this.history.length;
+    this.lastDraw = this.totalRounds ? this.history[this.totalRounds-1] : [];
+    this.historicalSets = new Set(this.history.map(r=>r.join(',')));
+    this._analyzeAll();
+  }
+  _analyzeAll(){
+    this.frequency = this._analyzeFrequency();
+    this.gap       = this._analyzeGaps();
+    this.pair      = this._analyzePairs();
+    this.momentum  = this._analyzeMomentum();
+    this.zone      = this._analyzeZones();
+    this.patterns  = this._analyzePatterns();
+    this.finalScores = this._calculateFinalScores();
+  }
+  static _robustNormalize(arr){                    // len 46, [0]은 미사용
+    const s = arr.slice(1);
+    const mx = Math.max(...s), mn = Math.min(...s);
+    if(!s.length || mx === mn) return arr.slice();
+    const median = NU.median(s);
+    const q25 = NU.percentile(s,25), q75 = NU.percentile(s,75);
+    const iqr = q75 - q25;
+    let norm;
+    if(iqr > 0){
+      norm = s.map(v => (NU.clip((v-median)/iqr, -2, 2) + 2) / 4);
+    } else {
+      norm = mx > 0 ? s.map(v=>v/mx) : s.slice();
+    }
+    const out = arr.slice();
+    for(let i=0;i<45;i++) out[i+1] = norm[i];
+    return out;
+  }
+  _counterOver(rows){
+    const c = new Array(46).fill(0);
+    for(const row of rows) for(const n of row) c[n]++;
+    return c;
+  }
+  _analyzeFrequency(){
+    const byPeriod = {};
+    const periodWeights = {10:4.0, 30:2.5, 50:1.5, 100:1.0};
+    for(const p of this.config.RECENT_PERIODS)
+      if(p <= this.totalRounds)
+        byPeriod[p] = this._counterOver(this.history.slice(-p));
+    const weighted = new Array(46).fill(0);
+    for(let num=1; num<=45; num++){
+      let score = 0;
+      for(const [pStr,w] of Object.entries(periodWeights)){
+        const p = parseInt(pStr);
+        if(byPeriod[p]){
+          const expected = (p*6)/45;
+          score += (byPeriod[p][num]/expected)*w;
+        }
+      }
+      weighted[num] = score;
+    }
+    return { byPeriod, weighted: DataEngine._robustNormalize(weighted) };
+  }
+  _analyzeGaps(){
+    const appearances = Array.from({length:46},()=>[]);
+    this.history.forEach((row,idx)=>{ for(const n of row) appearances[n].push(idx); });
+    const gapCur={}, avgGap={}, score=new Array(46).fill(0);
+    for(let num=1;num<=45;num++){
+      const ap = appearances[num];
+      if(ap.length > 1){
+        const gaps=[]; for(let i=0;i<ap.length-1;i++) gaps.push(ap[i+1]-ap[i]);
+        avgGap[num]=NU.mean(gaps);
+        gapCur[num]=this.totalRounds-1-ap[ap.length-1];
+        const ratio = avgGap[num]>0 ? gapCur[num]/avgGap[num] : 1;
+        if(ratio>=0.8 && ratio<=1.5)      score[num]=1.0-Math.abs(ratio-1.0)*0.3;
+        else if(ratio>1.5)               score[num]=Math.max(0.15,1.0-(ratio-1.5)*0.2);
+        else                             score[num]=Math.max(0.25,ratio*0.6);
+      } else {
+        gapCur[num]=this.totalRounds; avgGap[num]=this.totalRounds/2; score[num]=0.3;
+      }
+    }
+    return { gap:gapCur, avgGap, score: DataEngine._robustNormalize(score) };
+  }
+  _analyzePairs(){
+    const window = Math.min(100, this.totalRounds);
+    const pairCount = new Map();
+    for(const row of this.history.slice(-window)){
+      const s=[...row].sort((a,b)=>a-b);
+      for(let i=0;i<6;i++) for(let j=i+1;j<6;j++){
+        const k=s[i]+'-'+s[j];
+        pairCount.set(k,(pairCount.get(k)||0)+1);
+      }
+    }
+    const topPairs = [...pairCount.entries()]
+      .sort((a,b)=>b[1]-a[1]).slice(0,50)
+      .map(([k,c])=>({pair:k.split('-').map(Number), count:c}));
+    const pairScore = Array.from({length:46},()=>new Array(46).fill(0));
+    const strength = new Array(46).fill(0);
+    for(const [k,count] of pairCount.entries()){
+      const [a,b]=k.split('-').map(Number);
+      const st = count/window;
+      pairScore[a][b]=st; pairScore[b][a]=st;
+      strength[a]+=st; strength[b]+=st;
+    }
+    return { pairCount, topPairs, pairScore,
+             strength: DataEngine._robustNormalize(strength) };
+  }
+  _analyzeMomentum(){
+    const momentum = new Array(46).fill(0); const trend={};
+    if(this.totalRounds >= 30){
+      const r10=this._counterOver(this.history.slice(-10));
+      const r30=this._counterOver(this.history.slice(-30));
+      for(let num=1;num<=45;num++){
+        const short=r10[num]/10, mid=r30[num]/30;
+        if(mid>0){
+          momentum[num]=short/mid;
+          trend[num]= momentum[num]>1.3?'UP': momentum[num]<0.7?'DOWN':'STABLE';
+        } else {
+          momentum[num]= short>0?1.0:0.5;
+          trend[num]= short>0?'UP':'DORMANT';
+        }
+      }
+    }
+    return { momentum: DataEngine._robustNormalize(momentum), trend };
+  }
+  _analyzeZones(){
+    const zones=[[1,10],[11,20],[21,30],[31,40],[41,45]];
+    const recent = this.totalRounds>=50 ? this.history.slice(-50) : this.history;
+    const cnt = this._counterOver(recent);
+    const zoneScore = new Array(46).fill(0);
+    for(const [zs,ze] of zones){
+      let mx=0; for(let n=zs;n<=ze;n++) mx=Math.max(mx,cnt[n]);
+      for(let n=zs;n<=ze;n++) zoneScore[n]= mx>0 ? cnt[n]/mx : 0;
+    }
+    return { zoneScore };
+  }
+  _analyzePatterns(){
+    const sumDist=[], acDist=[];
+    for(const row of this.history){
+      sumDist.push(row.reduce((s,x)=>s+x,0));
+      acDist.push(DataEngine.acValue(row));
+    }
+    return { sumDist, acDist };
+  }
+  static acValue(nums){
+    const d=new Set();
+    for(let i=0;i<6;i++) for(let j=i+1;j<6;j++) d.add(Math.abs(nums[j]-nums[i]));
+    return d.size-5;
+  }
+  _calculateFinalScores(){
+    const cfg=this.config;
+    const scores=new Array(46).fill(0);
+    const r10 = this.frequency.byPeriod[10] || new Array(46).fill(0);
+    const expected10 = (10*6)/45;
+    for(let num=1;num<=45;num++){
+      const recency = Math.min(r10[num]/expected10, 1.5)/1.5;
+      scores[num] =
+          this.frequency.weighted[num] * cfg.WEIGHT_FREQUENCY
+        + recency                      * cfg.WEIGHT_RECENCY
+        + this.gap.score[num]          * cfg.WEIGHT_GAP
+        + this.pair.strength[num]      * cfg.WEIGHT_PAIR
+        + this.momentum.momentum[num]  * cfg.WEIGHT_MOMENTUM
+        + this.zone.zoneScore[num]     * cfg.WEIGHT_ZONE;
+    }
+    let total=0; for(let n=1;n<=45;n++) total+=scores[n];
+    if(total>0) for(let n=1;n<=45;n++) scores[n]/=total;
+    return scores;
+  }
+  hotNumbers(k=10){
+    return [...Array(45)].map((_,i)=>({n:i+1,s:this.finalScores[i+1]}))
+      .sort((a,b)=>b.s-a.s).slice(0,k);
+  }
+}
+
+/* ── GeometricAnalyzer (간이 클러스터링 — v3.4 폴백 사양 그대로) ─────────── */
+class GeometricAnalyzer {
+  constructor(engine){
+    this.engine = engine;
+    this.nClusters = 3;
+    const sums = engine.history.map(r=>r.reduce((s,x)=>s+x,0));
+    this.q33 = NU.percentile(sums,33);
+    this.q66 = NU.percentile(sums,66);
+    this.labels = sums.map(s => s<this.q33?0 : s<this.q66?1 : 2);
+    this.clusterStats = {};
+    this._computeStats();
+  }
+  _computeStats(){
+    const H=this.engine.history, L=this.labels;
+    const recentN = Math.min(50, H.length);
+    for(let cid=0; cid<this.nClusters; cid++){
+      const draws = H.filter((_,i)=>L[i]===cid);
+      let recentC=0;
+      for(let i=L.length-recentN; i<L.length; i++)
+        if(i>=0 && L[i]===cid) recentC++;
+      this.clusterStats[cid] = {
+        count: draws.length,
+        ratio: draws.length/Math.max(H.length,1),
+        avgSum: draws.length? NU.mean(draws.map(r=>r.reduce((s,x)=>s+x,0))):0,
+        avgSpread: draws.length? NU.mean(draws.map(r=>r[5]-r[0])):0,
+        recentRatio: recentN>0? recentC/recentN:0,
+      };
+    }
+    this.topClusters = Object.entries(this.clusterStats)
+      .map(([cid,st])=>({cid:+cid, sc: st.ratio*0.5+st.recentRatio*0.5}))
+      .sort((a,b)=>b.sc-a.sc).slice(0,3).map(o=>o.cid);
+  }
+  clusterId(nums){
+    const s = nums.reduce((a,x)=>a+x,0);
+    return s<this.q33?0 : s<this.q66?1 : 2;
+  }
+  clusterBonus(nums){
+    const cid=this.clusterId(nums);
+    if(cid===this.topClusters[0]) return 1.0;
+    if(this.topClusters.slice(1).includes(cid)) return 0.6;
+    return 0.2;
+  }
+}
+
+/* ── FilterSystem (12종 필터) ────────────────────────────────────────────── */
+class FilterSystem {
+  constructor(engine, config){
+    this.engine=engine; this.config=config||engine.config; this.reset();
+  }
+  reset(){ this.rejection={}; this.checked=0; this.passed=0; }
+  applyAll(nums, track=true){
+    const n=[...nums].sort((a,b)=>a-b);
+    const cfg=this.config;
+    const checks = [
+      ['합계',   ()=>{ const s=n.reduce((a,x)=>a+x,0);
+                       return s>=cfg.SUM_RANGE[0] && s<=cfg.SUM_RANGE[1]; }],
+      ['AC값',   ()=> DataEngine.acValue(n) >= cfg.MIN_AC ],
+      ['홀짝',   ()=> cfg.ODD_RATES.includes(n.filter(x=>x%2===1).length) ],
+      ['고저',   ()=> cfg.HIGH_RATES.includes(n.filter(x=>x>=23).length) ],
+      ['구간',   ()=>{ const zc=[0,0,0,0,0];
+                       for(const x of n) zc[Math.min(Math.floor((x-1)/10),4)]++;
+                       return zc.filter(c=>c>0).length>=cfg.MIN_ZONES
+                           && Math.max(...zc)<=cfg.MAX_PER_ZONE; }],
+      ['연속',   ()=>{ let run=1;
+                       for(let i=0;i<5;i++){
+                         if(n[i+1]===n[i]+1){ run++; if(run>cfg.MAX_CONSECUTIVE) return false; }
+                         else run=1; }
+                       return true; }],
+      ['끝수',   ()=>{ const e=n.map(x=>x%10); const c={};
+                       for(const x of e) c[x]=(c[x]||0)+1;
+                       return new Set(e).size>=cfg.MIN_UNIQUE_ENDINGS
+                           && Math.max(...Object.values(c))<=cfg.MAX_SAME_ENDING; }],
+      ['소수',   ()=>{ const pc=n.filter(x=>PRIME_NUMBERS.has(x)).length;
+                       return pc>=cfg.PRIME_RANGE[0] && pc<=cfg.PRIME_RANGE[1]; }],
+      ['이전회차',()=>{ if(!this.engine.lastDraw.length) return true;
+                       const prev=new Set(this.engine.lastDraw);
+                       const mc=n.filter(x=>prev.has(x)).length;
+                       return mc>=cfg.PREV_MATCH_RANGE[0] && mc<=cfg.PREV_MATCH_RANGE[1]; }],
+      ['역대중복',()=> !this.engine.historicalSets.has(n.join(',')) ],
+      ['간격',   ()=>{ const gaps=[]; for(let i=0;i<5;i++) gaps.push(n[i+1]-n[i]);
+                       const m=NU.mean(gaps); return m>=3.5 && m<=13.0; }],
+      ['경계',   ()=>{ if(n.includes(1)&&n.includes(45))
+                         return n.some(x=>x>=18&&x<=27);
+                       return true; }],
+    ];
+    if(track) this.checked++;
+    for(const [name,fn] of checks){
+      if(!fn()){ if(track) this.rejection[name]=(this.rejection[name]||0)+1;
+                 return {ok:false, reason:name}; }
+    }
+    if(track) this.passed++;
+    return {ok:true, reason:''};
+  }
+  rejectionSummary(topN=6){
+    const total = Object.values(this.rejection).reduce((s,x)=>s+x,0);
+    return Object.entries(this.rejection).sort((a,b)=>b[1]-a[1]).slice(0,topN)
+      .map(([name,cnt])=>({name,cnt,pct: total>0? cnt/total*100:0}));
+  }
+}
+
+/* ── EnsembleGenerator ───────────────────────────────────────────────────── */
+class EnsembleGenerator {
+  constructor(engine, geometric, rng){
+    this.engine=engine; this.geometric=geometric;
+    this.rng = rng || makeRng(42);
+    this.filter = new FilterSystem(engine);
+    this.scores = engine.finalScores.slice();
+    this._attempts=0; this._passed=0;
+  }
+  _weights(){
+    const w=this.scores.slice(1);
+    const s=w.reduce((a,x)=>a+x,0);
+    return s>0 ? w.map(x=>x/s) : new Array(45).fill(1/45);
+  }
+  _tryAdd(nums, algo, results){
+    this._attempts++;
+    const {ok}=this.filter.applyAll(nums,true);
+    if(ok){ this._passed++; results.push({nums, algo}); return true; }
+    return false;
+  }
+  generate(count=5){
+    this.filter.reset(); this._attempts=0; this._passed=0;
+    const all=[];
+    const meta={algos:[]};
+    const c1=this._algoWeighted(count*4);      all.push(...c1);
+    meta.algos.push(['Weighted',c1.length]);
+    const c2=this._algoBalanced(count*4);      all.push(...c2);
+    meta.algos.push(['Balanced',c2.length]);
+    const c3=this._algoPattern(count*4);       all.push(...c3);
+    meta.algos.push(['Pattern',c3.length]);
+    if(this.geometric){
+      const c4=this._algoMultiCluster(count*4); all.push(...c4);
+      meta.algos.push(['MultiCluster',c4.length]);
+    }
+    meta.attempts=this._attempts;
+    meta.passRate=this._attempts>0? this._passed/this._attempts*100:0;
+    if(!all.length) return {sets:[], meta};
+    const scored=this._scoreCandidates(all);
+    const final=this._selectWithCoverage(scored,count);
+    meta.candidates=scored.length;
+    return {sets: final, meta};
+  }
+  _algoWeighted(count){
+    const results=[], w=this._weights();
+    const items=[...Array(45)].map((_,i)=>i+1);
+    const maxIter=Math.min(count*20,80000);
+    for(let it=0; it<maxIter && results.length<count; it++){
+      const pick=this.rng.weightedSampleNoReplace(items,w,6);
+      if(!pick) continue;
+      this._tryAdd([...pick].sort((a,b)=>a-b),'weighted',results);
+    }
+    return results;
+  }
+  _algoBalanced(count){
+    const results=[], zones=[[1,10],[11,20],[21,30],[31,40],[41,45]];
+    const w=this._weights();
+    const maxIter=Math.min(count*20,80000);
+    for(let it=0; it<maxIter && results.length<count; it++){
+      const picks=[1,1,1,1,1]; picks[this.rng.randint(0,5)]++;
+      const nums=[]; let valid=true;
+      for(let i=0;i<5;i++){
+        const [zs,ze]=zones[i];
+        const zoneNums=[]; for(let n=zs;n<=ze;n++) zoneNums.push(n);
+        let zw=zoneNums.map(n=>w[n-1]);
+        const zsum=zw.reduce((a,x)=>a+x,0);
+        zw = zsum>0 ? zw.map(x=>x/zsum) : zoneNums.map(()=>1/zoneNums.length);
+        const got=this.rng.weightedSampleNoReplace(zoneNums,zw,picks[i]);
+        if(!got){ valid=false; break; }
+        nums.push(...got);
+      }
+      if(!valid) continue;
+      const uniq=[...new Set(nums)].sort((a,b)=>a-b);
+      if(uniq.length===6) this._tryAdd(uniq,'balanced',results);
+    }
+    return results;
+  }
+  _algoPattern(count){
+    const results=[];
+    const topPairs=this.engine.pair.topPairs.slice(0,30);
+    const w=this._weights();
+    const items=[...Array(45)].map((_,i)=>i+1);
+    const maxIter=Math.min(count*20,80000);
+    for(let it=0; it<maxIter && results.length<count; it++){
+      let base=[];
+      if(topPairs.length && this.rng()<0.7){
+        const idx=this.rng.randint(0,Math.min(15,topPairs.length));
+        base=topPairs[idx].pair.slice();
+      }
+      const numsSet=new Set(base);
+      const needed=6-numsSet.size;
+      const tw=w.slice();
+      for(const n of numsSet) tw[n-1]=0;
+      if(tw.reduce((a,x)=>a+x,0)<=0) continue;
+      const extra=this.rng.weightedSampleNoReplace(items,tw,needed);
+      if(!extra) continue;
+      for(const n of extra) numsSet.add(n);
+      if(numsSet.size===6)
+        this._tryAdd([...numsSet].sort((a,b)=>a-b),'pattern',results);
+    }
+    return results;
+  }
+  _algoMultiCluster(count){
+    const results=[];
+    if(!this.geometric) return results;
+    const w=this._weights();
+    const items=[...Array(45)].map((_,i)=>i+1);
+    const maxIter=Math.min(count*25,80000);
+    const targets=this.geometric.topClusters.map(cid=>({
+      cluster:cid,
+      targetSum:Math.trunc(this.geometric.clusterStats[cid].avgSum),
+      targetSpread:Math.trunc(this.geometric.clusterStats[cid].avgSpread),
+    }));
+    if(!targets.length) return results;
+    const probs=targets.map(()=>1/targets.length);   // [v3.4] 균등 확률
+    for(let it=0; it<maxIter && results.length<count; it++){
+      const chosen=targets[this.rng.choiceIndexWeighted(probs)];
+      const spread=Math.max(5,chosen.targetSpread);
+      const first=this.rng.randint(1,Math.max(2,46-spread));
+      let last=Math.min(45, first+spread+this.rng.randint(-5,6));
+      last=Math.max(first+5,last);
+      const seeds=[...new Set([first,Math.min(45,last)])];
+      const tw=w.slice();
+      for(const n of seeds) if(n>=1&&n<=45) tw[n-1]=0;
+      if(tw.reduce((a,x)=>a+x,0)<=0) continue;
+      const needed=6-seeds.length;
+      const extra=this.rng.weightedSampleNoReplace(items,tw,needed);
+      if(!extra) continue;
+      let all=new Set(seeds); for(const n of extra) all.add(n);
+      if(all.size<6) continue;
+      if(all.size>6)
+        all=new Set([...all].sort((a,b)=>this.scores[b]-this.scores[a]).slice(0,6));
+      const nums=[...all].sort((a,b)=>a-b);
+      if(Math.abs(nums.reduce((s,x)=>s+x,0)-chosen.targetSum)<=35)
+        this._tryAdd(nums,`cluster_${chosen.cluster}`,results);
+    }
+    return results;
+  }
+  _scoreCandidates(candidates){
+    const seen=new Set(), unique=[], rawNum=[], rawPair=[];
+    for(const cand of candidates){
+      const key=cand.nums.join(',');
+      if(seen.has(key)) continue;
+      seen.add(key);
+      const nums=cand.nums;
+      rawNum.push(nums.reduce((s,n)=>s+this.scores[n],0));
+      let ps=0;
+      for(let i=0;i<6;i++) for(let j=i+1;j<6;j++)
+        ps+=this.engine.pair.pairScore[nums[i]][nums[j]];
+      rawPair.push(ps);
+      unique.push(cand);
+    }
+    if(!unique.length) return [];
+    const maxNum=Math.max(...rawNum)>0? Math.max(...rawNum):1;
+    const maxPair=Math.max(...rawPair)>0? Math.max(...rawPair):1;
+    return unique.map((cand,i)=>{
+      const nums=cand.nums;
+      const s=nums.reduce((a,x)=>a+x,0);
+      const ac=DataEngine.acValue(nums);
+      const zones=[0,0,0,0,0];
+      for(const n of nums) zones[Math.min(Math.floor((n-1)/10),4)]++;
+      const sumScore = (s>=110&&s<=190)?1.0:0.5;
+      const acScore = NU.clip(ac/10,0,1);
+      const numScore = NU.clip(rawNum[i]/maxNum,0,1);
+      const pairScore = NU.clip(rawPair[i]/maxPair,0,1);
+      const balance = NU.clip(1/(1+NU.variance(zones)),0,1);
+      const clusterBonus = this.geometric? this.geometric.clusterBonus(nums):0.5;
+      const algoBonus = cand.algo==='balanced'?1.0:0.8;
+      const total = sumScore*0.12 + acScore*0.12 + numScore*0.28
+                  + pairScore*0.18 + balance*0.13
+                  + clusterBonus*this.engine.config.CLUSTER_BONUS_WEIGHT
+                  + algoBonus*0.07;
+      cand.stat={ sum:s, ac,
+        odd:nums.filter(x=>x%2===1).length,
+        high:nums.filter(x=>x>=23).length,
+        prime:nums.filter(x=>PRIME_NUMBERS.has(x)).length,
+        clusterBonus,
+        clusterId: this.geometric? this.geometric.clusterId(nums):-1 };
+      cand.totalScore=Math.round(total*1e6)/1e6;
+      return cand;
+    });
+  }
+  _buildDiversePool(candidates,count){
+    const poolSize=Math.max(count*10,50);
+    const sortedAll=[...candidates].sort((a,b)=>b.totalScore-a.totalScore);
+    const byCluster=new Map();
+    for(const cand of sortedAll){
+      const cid=cand.stat.clusterId;
+      if(!byCluster.has(cid)) byCluster.set(cid,[]);
+      byCluster.get(cid).push(cand);
+    }
+    const pool=[], seen=new Set();
+    for(const [,cands] of byCluster)
+      for(const c of cands.slice(0,count))
+        if(!seen.has(c)){ pool.push(c); seen.add(c); }
+    for(const c of sortedAll){
+      if(pool.length>=poolSize) break;
+      if(!seen.has(c)){ pool.push(c); seen.add(c); }
+    }
+    return pool;
+  }
+  _selectWithCoverage(candidates,count){
+    if(!candidates.length) return [];
+    const pool=this._buildDiversePool(candidates,count);
+    const selected=[], usedNums=new Set(), clusterCounter={};
+    const maxOverlap=this.engine.config.MAX_SET_OVERLAP;
+    const maxSameCls=Math.max(1,Math.floor(count/2));
+    for(let round=0; round<count; round++){
+      let bestIdx=-1, bestValue=-1;
+      for(let i=0;i<pool.length;i++){
+        const cand=pool[i];
+        if(selected.includes(cand)) continue;
+        const numsSet=new Set(cand.nums);
+        const cid=cand.stat.clusterId;
+        const overlapOk = selected.every(s=>{
+          let ov=0; for(const n of s.nums) if(numsSet.has(n)) ov++;
+          return ov<=maxOverlap; });
+        if(!overlapOk) continue;
+        if((clusterCounter[cid]||0) >= maxSameCls) continue;
+        let newCov=0; for(const n of numsSet) if(!usedNums.has(n)) newCov++;
+        const value=cand.totalScore*0.7 + (newCov/6)*0.3;
+        if(value>bestValue){ bestValue=value; bestIdx=i; }
+      }
+      if(bestIdx>=0){
+        const chosen=pool[bestIdx];
+        selected.push(chosen);
+        for(const n of chosen.nums) usedNums.add(n);
+        clusterCounter[chosen.stat.clusterId]=
+          (clusterCounter[chosen.stat.clusterId]||0)+1;
+      } else {
+        const remaining=pool.filter(c=>!selected.includes(c)
+          && selected.every(s=>{
+               let ov=0; for(const n of s.nums) if(c.nums.includes(n)) ov++;
+               return ov<=maxOverlap; }));
+        if(remaining.length){
+          const fb=remaining.reduce((m,c)=>c.totalScore>m.totalScore?c:m);
+          selected.push(fb);
+          for(const n of fb.nums) usedNums.add(n);
+          clusterCounter[fb.stat.clusterId]=
+            (clusterCounter[fb.stat.clusterId]||0)+1;
+        } else {
+          const left=pool.filter(c=>!selected.includes(c));
+          if(left.length){
+            const fb=left.reduce((m,c)=>c.totalScore>m.totalScore?c:m);
+            selected.push(fb);
+            for(const n of fb.nums) usedNums.add(n);
+          }
+        }
+      }
+    }
+    return selected;
+  }
+}
+
+/* ── 부트스트랩 통계 ─────────────────────────────────────────────────────── */
+function bootstrapMeanCI(values, nBoot=2000, alpha=0.05, seed=42){
+  if(!values.length) return [0,0];
+  const rng=makeRng(seed);
+  const means=new Array(nBoot);
+  for(let b=0;b<nBoot;b++){
+    let s=0;
+    for(let i=0;i<values.length;i++)
+      s+=values[rng.randint(0,values.length)];
+    means[b]=s/values.length;
+  }
+  return [NU.percentile(means,100*alpha/2), NU.percentile(means,100*(1-alpha/2))];
+}
+function nullDistributionVerdict(sysMatches, randPool, nBoot=2000, seed=42){
+  const sysAvg=NU.mean(sysMatches);
+  if(!randPool.length) return {lo:0,hi:0,pct:50,verdict:'판정 불가 (대조군 없음)',sysAvg};
+  const rng=makeRng(seed);
+  const nullMeans=new Array(nBoot);
+  for(let b=0;b<nBoot;b++){
+    let s=0;
+    for(let i=0;i<sysMatches.length;i++)
+      s+=randPool[rng.randint(0,randPool.length)];
+    nullMeans[b]=s/sysMatches.length;
+  }
+  const lo=NU.percentile(nullMeans,2.5), hi=NU.percentile(nullMeans,97.5);
+  const pct=nullMeans.filter(m=>m<sysAvg).length/nBoot*100;
+  const verdict = sysAvg>hi ? '시스템 우세 (95% 유의)'
+                : sysAvg<lo ? '시스템 열세 (95% 유의)'
+                : '통계적 동률 — 랜덤 귀무분포 95% 구간 내';
+  return {lo,hi,pct,verdict,sysAvg};
+}
+
+/* ── BacktestEngine (walk-forward + 랜덤 대조군, 진행 콜백) ──────────────── */
+async function runBacktest(allHist, {testRounds=20, predsPerRound=5,
+                                     randPerRound=100, seed=42,
+                                     onProgress=null, config=null}={}){
+  const rng=makeRng(seed);
+  const total=allHist.length;
+  let startIdx=Math.max(total-testRounds,100);
+  const endIdx=total;
+  const actualRounds=endIdx-startIdx;
+  if(actualRounds<=0) throw new Error('유효 검증 구간이 없습니다 (최소 100회차 필요).');
+  const matchDist={}, allMatches=[], highlights=[];
+  const randDist={}, randPool=[], sysRoundBest=[], randRoundBest=[];
+  for(let i=0;i<actualRounds;i++){
+    const roundIdx=startIdx+i;
+    const actual=new Set(allHist[roundIdx]);
+    const engine=new DataEngine(allHist.slice(0,roundIdx), config||defaultConfig());
+    const geo=new GeometricAnalyzer(engine);
+    const gen=new EnsembleGenerator(engine,geo,rng);
+    const {sets}=gen.generate(predsPerRound);
+    let roundBest=0;
+    for(const pred of sets){
+      let mc=0; for(const n of pred.nums) if(actual.has(n)) mc++;
+      matchDist[mc]=(matchDist[mc]||0)+1;
+      allMatches.push(mc);
+      roundBest=Math.max(roundBest,mc);
+      if(mc>=3) highlights.push({round:roundIdx+1,pred:pred.nums,
+                                 actual:[...actual].sort((a,b)=>a-b),mc});
+    }
+    sysRoundBest.push(roundBest);
+    const roundRand=[];
+    const nRand=Math.max(randPerRound, sets.length);
+    for(let r=0;r<nRand;r++){
+      const rs=rng.uniformSample(1,45,6);
+      let mc=0; for(const n of rs) if(actual.has(n)) mc++;
+      randDist[mc]=(randDist[mc]||0)+1;
+      randPool.push(mc); roundRand.push(mc);
+    }
+    randRoundBest.push(sets.length? Math.max(...roundRand.slice(0,sets.length)):0);
+    if(onProgress) await onProgress(i+1, actualRounds, roundIdx+1, roundBest);
+  }
+  if(!allMatches.length) return null;
+  const avg=NU.mean(allMatches);
+  const randAvg=NU.mean(randPool);
+  const composite=avg+(matchDist[3]||0)*0.3+(matchDist[4]||0)*1.0+(matchDist[5]||0)*5.0;
+  const sysCI=bootstrapMeanCI(allMatches);
+  const nullV=nullDistributionVerdict(allMatches,randPool);
+  const sMb=NU.mean(sysRoundBest), rMb=NU.mean(randRoundBest);
+  const s3p=sysRoundBest.filter(m=>m>=3).length/Math.max(sysRoundBest.length,1)*100;
+  const r3p=randRoundBest.filter(m=>m>=3).length/Math.max(randRoundBest.length,1)*100;
+  return { avg, randAvg, matchDist, randDist, composite,
+           bestMatch:Math.max(...allMatches),
+           totalPredictions:allMatches.length,
+           sysCI, nullV, sMb, rMb, s3p, r3p,
+           improvement:((avg/RANDOM_EXPECTED)-1)*100, highlights,
+           testedRounds:actualRounds };
+}
+
+/* ── PredictionTracker (localStorage / 메모리 겸용) ──────────────────────── */
+class PredictionTracker {
+  static KEY='lotto_lab_prediction_log_v1';
+  constructor(storage){
+    this.storage = storage ||
+      (typeof localStorage!=='undefined' ? localStorage : {
+        _m:{}, getItem(k){return this._m[k]??null;},
+        setItem(k,v){this._m[k]=v;}, removeItem(k){delete this._m[k];} });
+    const raw=this.storage.getItem(PredictionTracker.KEY);
+    this.log = raw? JSON.parse(raw) : [];
+  }
+  _save(){ this.storage.setItem(PredictionTracker.KEY, JSON.stringify(this.log)); }
+  logPredictions(targetRound, sets, seed){
+    if(targetRound==null) return {ok:false, msg:'round 열이 없어 대상 회차를 특정할 수 없습니다.'};
+    const existing=this.log.filter(r=>r.target_round===targetRound);
+    if(existing.length)
+      return {ok:false, msg:`${targetRound}회차 예측은 이미 ${existing.length}세트 기록됨 — 기존 기록을 보존합니다.`};
+    const now=new Date().toISOString().slice(0,19).replace('T',' ');
+    sets.forEach((s,i)=>{
+      const n=[...s.nums].sort((a,b)=>a-b);
+      this.log.push({logged_at:now, engine_version:ENGINE_VERSION, seed,
+                     target_round:targetRound, set_no:i+1,
+                     n1:n[0],n2:n[1],n3:n[2],n4:n[3],n5:n[4],n6:n[5],
+                     match_count:null});
+    });
+    this._save();
+    return {ok:true, msg:`${targetRound}회차 예측 ${sets.length}세트를 기록했습니다.`};
+  }
+  reconcile(roundMap){
+    let updated=0;
+    for(const rec of this.log){
+      if(rec.match_count==null && roundMap.has(rec.target_round)){
+        const actual=new Set(roundMap.get(rec.target_round));
+        let mc=0;
+        for(let k=1;k<=6;k++) if(actual.has(rec['n'+k])) mc++;
+        rec.match_count=mc; updated++;
+      }
+    }
+    if(updated) this._save();
+    return updated;
+  }
+  summary(){
+    const done=this.log.filter(r=>r.match_count!=null);
+    const pending=this.log.length-done.length;
+    if(!done.length) return {hasData:false, pending};
+    const matches=done.map(r=>r.match_count);
+    const rounds=new Set(done.map(r=>r.target_round)).size;
+    const [lo,hi]=bootstrapMeanCI(matches);
+    const dist={};
+    for(const m of matches) dist[m]=(dist[m]||0)+1;
+    let verdict;
+    if(lo>RANDOM_EXPECTED)      verdict='랜덤 기대 초과 (95% 유의) — 표본 확대 후 재검증 권장';
+    else if(hi<RANDOM_EXPECTED) verdict='랜덤 기대 미달 (95% 유의)';
+    else                        verdict=`통계적 동률 — CI가 이론 기대 ${RANDOM_EXPECTED.toFixed(3)}을 포함`;
+    return {hasData:true, pending, rounds, sets:matches.length,
+            avg:NU.mean(matches), lo, hi, dist, verdict,
+            roundsToGoal:Math.max(0,50-rounds)};
+  }
+  exportCsv(){
+    const cols=['logged_at','engine_version','seed','target_round','set_no',
+                'n1','n2','n3','n4','n5','n6','match_count'];
+    const lines=[cols.join(',')];
+    for(const r of this.log)
+      lines.push(cols.map(c=>r[c]??'').join(','));
+    return lines.join('\n');
+  }
+  importCsv(text){
+    const lines=text.replace(/^\uFEFF/,'').split(/\r?\n/).filter(l=>l.trim());
+    if(lines.length<2) return {added:0, skipped:0};
+    const H=lines[0].split(',').map(s=>s.trim());
+    const seen=new Set(this.log.map(r=>r.target_round+'#'+r.set_no));
+    let added=0, skipped=0;
+    for(const line of lines.slice(1)){
+      const v=line.split(',');
+      const rec={};
+      H.forEach((h,i)=>rec[h]=v[i]??'');
+      const tr=parseInt(rec.target_round), sn=parseInt(rec.set_no);
+      if(!Number.isFinite(tr)||!Number.isFinite(sn)){ skipped++; continue; }
+      if(seen.has(tr+'#'+sn)){ skipped++; continue; }
+      this.log.push({
+        logged_at:rec.logged_at||'', engine_version:rec.engine_version||'',
+        seed:parseInt(rec.seed)||0, target_round:tr, set_no:sn,
+        n1:+rec.n1,n2:+rec.n2,n3:+rec.n3,n4:+rec.n4,n5:+rec.n5,n6:+rec.n6,
+        match_count: rec.match_count===''||rec.match_count==null
+                     ? null : parseInt(rec.match_count),
+      });
+      seen.add(tr+'#'+sn); added++;
+    }
+    this.log.sort((a,b)=>a.target_round-b.target_round||a.set_no-b.set_no);
+    this._save();
+    return {added, skipped};
+  }
+  reset(){ this.log=[]; this.storage.removeItem(PredictionTracker.KEY); }
+}
+
+/* ── 내보내기 (node/browser 겸용) ────────────────────────────────────────── */
+const LottoEngine = { NU, makeRng, decodeCsvBuffer, loadHistoryEx,
+  defaultConfig, DataEngine, GeometricAnalyzer, FilterSystem,
+  EnsembleGenerator, bootstrapMeanCI, nullDistributionVerdict,
+  runBacktest, PredictionTracker,
+  PRIME_NUMBERS, RANDOM_EXPECTED, ENGINE_VERSION };
+if(typeof module!=='undefined' && module.exports) module.exports=LottoEngine;
+if(typeof window!=='undefined') window.LottoEngine=LottoEngine;
+
+</script>
+<script>
+(function(){
+'use strict';
+const E = window.LottoEngine;
+const $ = id => document.getElementById(id);
+
+const state = { history:null, rounds:null, engine:null, geo:null,
+                targetRound:null, tracker:new E.PredictionTracker(),
+                lastSets:null };
+
+/* ── 볼 렌더 ── */
+function zoneClass(n){ return 'z'+(Math.min(Math.floor((n-1)/10),4)+1); }
+function ballHtml(n, extra=''){ 
+  return `<div class="ball ${zoneClass(n)} ${extra}"><span>${n}</span></div>`;
+}
+
+/* ── 드롭존 ── */
+const dz = $('dropzone'), fi = $('fileInput');
+dz.addEventListener('click', ()=>fi.click());
+dz.addEventListener('keydown', e=>{ if(e.key==='Enter'||e.key===' ') fi.click(); });
+['dragover','dragenter'].forEach(ev=>dz.addEventListener(ev,e=>{e.preventDefault();dz.classList.add('hover');}));
+['dragleave','drop'].forEach(ev=>dz.addEventListener(ev,e=>{e.preventDefault();dz.classList.remove('hover');}));
+dz.addEventListener('drop', e=>{ const f=e.dataTransfer.files[0]; if(f) readFile(f); });
+fi.addEventListener('change', ()=>{ if(fi.files[0]) readFile(fi.files[0]); fi.value=''; });
+
+function readFile(file){
+  const reader=new FileReader();
+  reader.onload = () => {
+    try { onData(E.decodeCsvBuffer(reader.result), file.name); }
+    catch(err){ alert('데이터 로드 실패: '+err.message); }
+  };
+  reader.readAsArrayBuffer(file);
+}
+
+/* ── 데이터 로드 → 전체 파이프라인 ── */
+function onData(text, filename){
+  const {rounds, history, report} = E.loadHistoryEx(text);
+  state.history=history; state.rounds=rounds;
+  state.engine=new E.DataEngine(history);
+  state.geo=new E.GeometricAnalyzer(state.engine);
+  const known=rounds.filter(r=>r!=null);
+  state.targetRound = known.length ? Math.max(...known)+1 : null;
+
+  dz.classList.add('compact');
+  dz.querySelector('.big').textContent='새 회차 파일을 다시 놓으면 갱신됩니다';
+  dz.querySelector('.small').innerHTML=`현재: <code>${filename}</code>`;
+
+  $('report').innerHTML = report.map(l=>`<div class="ok">✓ ${l}</div>`).join('');
+  $('stRounds').textContent = history.length.toLocaleString();
+  $('stLast').textContent = known.length? Math.max(...known):'–';
+  $('stTarget').textContent = state.targetRound ?? '–';
+  $('secData').classList.remove('hide');
+
+  // 추적: 자동 대조 → 보고
+  const roundMap=new Map();
+  rounds.forEach((r,i)=>{ if(r!=null) roundMap.set(r, history[i]); });
+  const updated=state.tracker.reconcile(roundMap);
+  renderTracking(updated);
+
+  // 예측 자동 생성 + 자동 사전 등록
+  generateSets(false);
+
+  renderBoard();
+  renderLog();
+  ['secTrack','secPredict','secBoard','secBacktest','secLog']
+    .forEach(id=>$(id).classList.remove('hide'));
+}
+
+/* ── 추적 렌더 ── */
+function renderTracking(updated){
+  /* updated: 숫자 = 알림 갱신(0이면 숨김), null = 알림 상태 유지 */
+  const alert=$('trackAlert');
+  if(updated!=null){
+    if(updated>0){
+      alert.textContent=`🔗 지난 예측 ${updated}세트를 새 당첨번호와 자동 대조했습니다.`;
+      alert.classList.remove('hide');
+    } else alert.classList.add('hide');
+  }
+
+  const s=state.tracker.summary();
+  const body=$('trackBody');
+  if(!s.hasData){
+    body.innerHTML=`<div style="font-size:13.5px;color:var(--dim)">
+      아직 대조 완료된 예측이 없습니다.${s.pending?` 대기 중 ${s.pending}세트 — 다음 회차 파일을 놓으면 자동 채점됩니다.`:' 아래에서 생성된 예측이 자동으로 사전 등록됩니다.'}
+    </div>`;
+    return;
+  }
+  const cls = s.lo>E.RANDOM_EXPECTED ? 'win' : s.hi<E.RANDOM_EXPECTED ? 'lose' : 'tie';
+  const distHtml=Object.keys(s.dist).sort((a,b)=>b-a)
+    .map(k=>`${k}개 일치 ${s.dist[k]}세트`).join(' · ');
+  body.innerHTML=`
+    <div class="track-grid">
+      <div class="kv"><div class="k" style="font-size:11.5px;color:var(--faint)">대조 완료</div>
+        <div class="v" style="font-family:var(--mono);font-size:19px;font-weight:700">${s.rounds}회차 · ${s.sets}세트</div></div>
+      <div class="kv"><div class="k" style="font-size:11.5px;color:var(--faint)">평균 일치 [95% CI]</div>
+        <div class="v" style="font-family:var(--mono);font-size:19px;font-weight:700">${s.avg.toFixed(3)} <span style="font-size:13px;color:var(--dim)">[${s.lo.toFixed(3)} ~ ${s.hi.toFixed(3)}]</span></div></div>
+      <div class="kv"><div class="k" style="font-size:11.5px;color:var(--faint)">이론 랜덤 기대</div>
+        <div class="v" style="font-family:var(--mono);font-size:19px;font-weight:700">0.800</div></div>
+    </div>
+    <div class="verdict ${cls}">⚖ ${s.verdict}</div>
+    <div style="font-family:var(--mono);font-size:12px;color:var(--dim);margin-top:10px">${distHtml}${s.pending?` · 대기 ${s.pending}세트`:''}</div>
+    <div class="goalbar">
+      <div class="lbl"><span>통계적 유의성 목표</span><span>${s.rounds} / 50회차</span></div>
+      <div class="rail"><div class="fill" style="width:${Math.min(100,s.rounds/50*100)}%"></div></div>
+    </div>`;
+}
+
+/* ── 예측 생성 ── */
+function generateSets(isRegen){
+  const seed=parseInt($('seedInput').value)||42;
+  const gen=new E.EnsembleGenerator(state.engine, state.geo, E.makeRng(seed));
+  const {sets, meta}=gen.generate(5);
+  state.lastSets=sets;
+  const list=$('setList');
+  list.innerHTML = sets.map((s,i)=>`
+    <div class="setrow">
+      <div class="no">S${i+1}</div>
+      <div class="balls">${s.nums.map(n=>ballHtml(n)).join('')}</div>
+      <div class="meta">합 ${s.stat.sum} · AC ${s.stat.ac} · 홀 ${s.stat.odd} · C${s.stat.clusterId}<br>
+        점수 ${s.totalScore.toFixed(4)}
+        <button data-copy="${s.nums.join(', ')}" style="padding:3px 9px;font-size:11px;margin-left:8px">복사</button>
+      </div>
+    </div>`).join('')
+    + `<div style="font-family:var(--mono);font-size:11.5px;color:var(--faint);margin-top:10px">
+       시도 ${meta.attempts}회 · 필터 통과율 ${meta.passRate.toFixed(1)}% · 후보 ${meta.candidates}개 → 5세트 (세트 간 중복 ≤1)</div>`;
+  list.querySelectorAll('button[data-copy]').forEach(b=>
+    b.addEventListener('click',()=>copyText(b.dataset.copy,b)));
+
+  const r=state.tracker.logPredictions(state.targetRound, sets, seed);
+  $('logNotice').textContent='📔 '+r.msg+(isRegen&&!r.ok?' (다시 생성한 세트는 화면에만 표시됩니다)':'');
+  renderLog(); renderTracking(null);
+}
+$('btnRegen').addEventListener('click',()=>generateSets(true));
+$('btnCopyAll').addEventListener('click',()=>{
+  if(!state.lastSets) return;
+  copyText(state.lastSets.map(s=>s.nums.join(', ')).join('\n'), $('btnCopyAll'));
+});
+function copyText(t,btn){
+  navigator.clipboard.writeText(t).then(()=>{
+    const o=btn.textContent; btn.textContent='복사됨 ✓';
+    setTimeout(()=>btn.textContent=o,1200);
+  }).catch(()=>prompt('복사할 내용:',t));
+}
+
+/* ── 스코어 보드 ── */
+function renderBoard(){
+  const fs=state.engine.finalScores;
+  const vals=fs.slice(1);
+  const mn=Math.min(...vals), mx=Math.max(...vals);
+  const hot=new Set(state.engine.hotNumbers(10).map(o=>o.n));
+  $('board').innerHTML=[...Array(45)].map((_,i)=>{
+    const n=i+1, sc=fs[n];
+    const t=mx>mn?(sc-mn)/(mx-mn):0.5;
+    const op=(0.30+t*0.70).toFixed(2);
+    return `<div class="cell">
+      <div class="ball ${zoneClass(n)} ${hot.has(n)?'hot':''}" style="opacity:${op}"><span>${n}</span></div>
+      <div class="sc">${(sc*1000).toFixed(1)}</div>
+    </div>`;
+  }).join('');
+}
+
+/* ── 백테스트 ── */
+$('btnBacktest').addEventListener('click', async ()=>{
+  const btn=$('btnBacktest'); btn.disabled=true;
+  const prog=$('btProgress'); prog.classList.remove('hide');
+  const fill=prog.querySelector('.fill'); fill.style.width='0%';
+  $('btResult').innerHTML=''; $('btStatus').textContent='엔진 재구성 중...';
+  const testRounds=parseInt($('btRounds').value);
+  try{
+    const res=await E.runBacktest(state.history,{
+      testRounds, predsPerRound:5, randPerRound:100,
+      seed:parseInt($('seedInput').value)||42,
+      onProgress:async(done,total,round,best)=>{
+        fill.style.width=(done/total*100).toFixed(1)+'%';
+        $('btStatus').textContent=`회차 ${round} 검증 (${done}/${total}) — 최대 ${best}개 일치`;
+        await new Promise(r=>setTimeout(r,0));
+      }});
+    $('btStatus').textContent=`완료 — ${res.testedRounds}회차 × 5세트 = ${res.totalPredictions}세트 검증`;
+    renderBtResult(res);
+  }catch(err){ $('btStatus').textContent='오류: '+err.message; }
+  btn.disabled=false;
+});
+
+function renderBtResult(r){
+  const cls=r.nullV.verdict.includes('우세')?'win':r.nullV.verdict.includes('열세')?'lose':'tie';
+  const maxCt=Math.max(...Object.values(r.matchDist));
+  const dist=Object.keys(r.matchDist).sort((a,b)=>b-a).map(k=>{
+    const ct=r.matchDist[k], pct=ct/r.totalPredictions*100;
+    return `<div class="row"><span class="lb">${k}개</span>
+      <div class="bar" style="width:${(ct/maxCt*100).toFixed(1)}%"></div>
+      <span class="ct">${ct}세트 (${pct.toFixed(1)}%)</span></div>`;
+  }).join('');
+  $('btResult').innerHTML=`
+    <div class="dist">${dist}</div>
+    <table>
+      <tr><th></th><th>시스템</th><th>랜덤 (100세트/회차)</th></tr>
+      <tr><td>세트 평균 일치</td><td>${r.avg.toFixed(3)}</td><td>${r.randAvg.toFixed(3)}</td></tr>
+      <tr><td>라운드 최대 평균</td><td>${r.sMb.toFixed(3)}</td><td>${r.rMb.toFixed(3)} <span style="color:var(--faint)">(동일 5세트 기준)</span></td></tr>
+      <tr><td>3+ 일치 라운드</td><td>${r.s3p.toFixed(1)}%</td><td>${r.r3p.toFixed(1)}%</td></tr>
+    </table>
+    <table>
+      <tr><th></th><th>구간</th></tr>
+      <tr><td>시스템 평균 95% CI</td><td>${r.sysCI[0].toFixed(3)} ~ ${r.sysCI[1].toFixed(3)}</td></tr>
+      <tr><td>랜덤 귀무분포 95%</td><td>${r.nullV.lo.toFixed(3)} ~ ${r.nullV.hi.toFixed(3)}</td></tr>
+      <tr><td>시스템 백분위</td><td>${r.nullV.pct.toFixed(1)}번째</td></tr>
+    </table>
+    <div class="verdict ${cls}" style="margin-top:14px">⚖ ${r.nullV.verdict}</div>
+    ${r.highlights.length?`<div style="font-family:var(--mono);font-size:12px;color:var(--dim);margin-top:12px">
+      🎯 ${r.highlights.slice(0,5).map(h=>`회차 ${h.round}: [${h.pred}] → ${h.mc}개`).join('<br>🎯 ')}</div>`:''}`;
+}
+
+/* ── 로그 ── */
+function renderLog(){
+  const log=state.tracker.log;
+  if(!log.length){ $('logTableWrap').innerHTML='<div style="font-size:13px;color:var(--dim)">아직 기록이 없습니다.</div>'; return; }
+  const rows=[...log].sort((a,b)=>b.target_round-a.target_round||a.set_no-b.set_no);
+  $('logTableWrap').innerHTML=`<table>
+    <tr><th>대상 회차</th><th>세트</th><th>번호</th><th>일치</th><th>기록 시각</th><th>seed</th></tr>
+    ${rows.map(r=>`<tr>
+      <td>${r.target_round}</td><td>S${r.set_no}</td>
+      <td>${[r.n1,r.n2,r.n3,r.n4,r.n5,r.n6].join(', ')}</td>
+      <td>${r.match_count==null?'<span style="color:var(--faint)">대기</span>':r.match_count+'개'}</td>
+      <td style="color:var(--faint)">${r.logged_at}</td><td>${r.seed}</td>
+    </tr>`).join('')}</table>`;
+}
+$('btnExport').addEventListener('click',()=>{
+  const blob=new Blob(['\uFEFF'+state.tracker.exportCsv()],{type:'text/csv;charset=utf-8'});
+  const a=document.createElement('a');
+  a.href=URL.createObjectURL(blob);
+  a.download='prediction_log.csv'; a.click();
+  URL.revokeObjectURL(a.href);
+});
+$('btnImport').addEventListener('click',()=>$('importInput').click());
+$('importInput').addEventListener('change',()=>{
+  const f=$('importInput').files[0]; if(!f) return;
+  const rd=new FileReader();
+  rd.onload=()=>{
+    const {added,skipped}=state.tracker.importCsv(E.decodeCsvBuffer(rd.result));
+    alert(`가져오기 완료: ${added}행 추가, ${skipped}행 건너뜀(중복/오류)`);
+    renderLog(); renderTracking(null);
+  };
+  rd.readAsArrayBuffer(f);
+  $('importInput').value='';
+});
+$('btnReset').addEventListener('click',()=>{
+  if(confirm('예측 기록을 전부 삭제합니다. 되돌릴 수 없습니다. 계속할까요?')){
+    state.tracker.reset(); renderLog(); renderTracking(null);
+    $('logNotice').textContent='';
+  }
+});
+})();
+</script>
+</body>
+</html>
