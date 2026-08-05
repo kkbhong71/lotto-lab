@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>LOTTO LAB — INTEGRATED v2.0</title>
+<title>LOTTO LAB — INTEGRATED v2.1</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+KR:wght@400;500;700&family=IBM+Plex+Mono:wght@500;700&display=swap" rel="stylesheet">
 <style>
@@ -128,6 +128,23 @@ button:disabled{opacity:.45;cursor:default}
 .legend{display:flex;gap:16px;flex-wrap:wrap;margin-top:16px;font-size:12px;color:var(--dim)}
 .legend i{width:10px;height:10px;border-radius:50%;display:inline-block;margin-right:5px;transform:translateY(1px)}
 
+
+/* ── 네트워크 커뮤니티 ── */
+.comm-card{background:var(--panel-2);border:1px solid var(--line);border-radius:10px;
+  padding:14px 16px;margin-bottom:10px}
+.comm-card .ch{display:flex;align-items:center;gap:10px;margin-bottom:8px}
+.comm-card .ch .cid{font-family:var(--mono);font-size:12px;color:var(--faint);min-width:28px}
+.comm-card .ch .hub{font-family:var(--mono);font-size:11px;color:var(--b2)}
+.comm-card .balls{display:flex;gap:5px;flex-wrap:wrap}
+.comm-card .ball{width:32px;height:32px;font-size:12px}
+
+/* ── 인기도 배지 ── */
+.pop-badge{display:inline-block;font-family:var(--mono);font-size:10.5px;
+  padding:2px 7px;border-radius:4px;margin-left:4px}
+.pop-badge.high{background:#1a3322;color:var(--ok);border:1px solid #2a5535}
+.pop-badge.mid{background:#2a2a1a;color:var(--b1);border:1px solid #4a4a2a}
+.pop-badge.low{background:#33201a;color:var(--bad);border:1px solid #55332a}
+
 /* ── 백테스트 ── */
 .progress{height:9px;background:var(--panel-2);border-radius:5px;overflow:hidden;margin:14px 0 6px}
 .progress .fill{height:100%;background:linear-gradient(90deg,var(--b1),var(--b3));width:0%;transition:width .1s}
@@ -167,7 +184,7 @@ button:focus-visible,#dropzone:focus-visible,input:focus-visible{
 
 <header>
   <div class="brand">
-    <h1>LOTTO LAB<span class="v">INTEGRATED v2.0</span></h1>
+    <h1>LOTTO LAB<span class="v">INTEGRATED v2.1</span></h1>
     <span class="dots">
       <i style="background:var(--b1)"></i><i style="background:var(--b2)"></i>
       <i style="background:var(--b3)"></i><i style="background:var(--b4)"></i>
@@ -207,8 +224,8 @@ button:focus-visible,#dropzone:focus-visible,input:focus-visible{
 </section>
 
 <section id="secPredict" class="hide">
-  <h2>이번 회차 예측 <span class="tag">ENSEMBLE · 4 ALGORITHMS</span></h2>
-  <div class="sub">가중치·구간균형·동반출현·다중클러스터 알고리즘 → 12종 필터 → 클러스터 쿼터 커버리지 선정</div>
+  <h2>이번 회차 예측 <span class="tag">ENSEMBLE · 5 ALGORITHMS + POPULARITY</span></h2>
+  <div class="sub">가중치·구간균형·동반출현·다중클러스터·<b>네트워크 커뮤니티</b> 5종 알고리즘 → 12종 필터 → <b>인기도 회피</b> + 클러스터 쿼터 커버리지 선정</div>
   <div class="toolbar">
     <label>seed <input type="number" id="seedInput" value="42"></label>
     <button id="btnRegen">다시 생성</button>
@@ -229,6 +246,13 @@ button:focus-visible,#dropzone:focus-visible,input:focus-visible{
     <span><i style="background:var(--b4)"></i>31–40</span>
     <span><i style="background:var(--b5)"></i>41–45</span>
   </div>
+</section>
+
+
+<section id="secNetwork" class="hide">
+  <h2>번호 네트워크 <span class="tag">CO-OCCURRENCE GRAPH · COMMUNITY</span></h2>
+  <div class="sub">최근 100회에서 함께 당첨된 빈도로 45개 번호의 관계 네트워크를 구성하고, 자주 함께 나오는 번호끼리 커뮤니티로 묶었습니다. 5번째 알고리즘은 이 커뮤니티에서 대표를 고루 뽑아 구조적 다양성을 확보합니다.</div>
+  <div id="networkGrid"></div>
 </section>
 
 <section id="secBacktest" class="hide">
@@ -260,7 +284,7 @@ button:focus-visible,#dropzone:focus-visible,input:focus-visible{
 </section>
 
 <footer>
-  <b>LOTTO LAB — INTEGRATED v2.0</b> · Python 레퍼런스(INTEGRATED v1.1)와 수치 교차 검증된 JavaScript 엔진<br>
+  <b>LOTTO LAB — INTEGRATED v2.1</b> · Python 레퍼런스 기반 · 인기도 회피 + 네트워크 커뮤니티 분석 탑재<br>
   Oseong Vibe Coding EduHub · 교육용 오픈 도구 · 이 도구의 어떤 출력도 당첨을 보장하지 않습니다.
 </footer>
 
@@ -283,7 +307,7 @@ button:focus-visible,#dropzone:focus-visible,input:focus-visible{
 
 const PRIME_NUMBERS = new Set([2,3,5,7,11,13,17,19,23,29,31,37,41,43]);
 const RANDOM_EXPECTED = 6 * 6 / 45;   // 0.800
-const ENGINE_VERSION = 'INTEGRATED v2.0 (JS)';
+const ENGINE_VERSION = 'INTEGRATED v2.1 (JS)';
 
 /* ── 수치 유틸 (numpy 동작 일치) ─────────────────────────────────────────── */
 const NU = {
@@ -425,7 +449,7 @@ function defaultConfig(){
     WEIGHT_FREQUENCY:0.18, WEIGHT_RECENCY:0.18, WEIGHT_GAP:0.16,
     WEIGHT_PAIR:0.14, WEIGHT_MOMENTUM:0.20, WEIGHT_ZONE:0.14,
     RECENT_PERIODS:[10,30,50,100], N_CLUSTERS:5,
-    CLUSTER_BONUS_WEIGHT:0.10, MAX_SET_OVERLAP:1,
+    CLUSTER_BONUS_WEIGHT:0.10, POPULARITY_WEIGHT:0.08, MAX_SET_OVERLAP:1,
   };
 }
 
@@ -446,7 +470,9 @@ class DataEngine {
     this.momentum  = this._analyzeMomentum();
     this.zone      = this._analyzeZones();
     this.patterns  = this._analyzePatterns();
+    this.popularity = new PopularityModel();
     this.finalScores = this._calculateFinalScores();
+    this.network = new NetworkAnalyzer(this);
   }
   static _robustNormalize(arr){                    // len 46, [0]은 미사용
     const s = arr.slice(1);
@@ -590,6 +616,8 @@ class DataEngine {
         + this.pair.strength[num]      * cfg.WEIGHT_PAIR
         + this.momentum.momentum[num]  * cfg.WEIGHT_MOMENTUM
         + this.zone.zoneScore[num]     * cfg.WEIGHT_ZONE;
+      // 인기도 회피: 비인기 번호에 보너스 (인기 번호 감점 효과)
+      scores[num] *= (1.0 + (1.0 - this.popularity.penalty[num]) * cfg.POPULARITY_WEIGHT);
     }
     let total=0; for(let n=1;n<=45;n++) total+=scores[n];
     if(total>0) for(let n=1;n<=45;n++) scores[n]/=total;
@@ -598,6 +626,143 @@ class DataEngine {
   hotNumbers(k=10){
     return [...Array(45)].map((_,i)=>({n:i+1,s:this.finalScores[i+1]}))
       .sort((a,b)=>b.s-a.s).slice(0,k);
+  }
+}
+
+/* ── PopularityModel (인기도 회피 — 기대 배당금 최적화) ────────────────────── */
+/*
+ * 로또 1등 당첨금은 당첨자 수로 나눕니다.
+ * 사람들이 편향적으로 고르는 번호를 피하면 당첨 확률은 동일하지만
+ * 당첨 시 기대 수익이 높아집니다. 이것은 "패턴 예측"이 아니라
+ * "게임 이론적 기대값 최적화"이므로 이론적으로 정당화되는 유일한 전략입니다.
+ *
+ * 편향 모델 (연구 기반):
+ *  ① 생일 편향: 1~12(월) 강한 선호, 1~31(일) 중간 선호 → 32~45 상대적 비인기
+ *  ② 행운의 수: 7, 3, 1, 13 등 문화적으로 선호되는 숫자
+ *  ③ 끝수 0 회피: 10, 20, 30, 40은 심리적으로 덜 선택됨
+ *  ④ 작은 수 선호: 전체적으로 작은 숫자가 더 많이 선택되는 경향
+ *  ⑤ 연속 패턴 선호: 1-2-3-4-5-6 류의 단순 패턴 (필터에서 이미 차단됨)
+ */
+class PopularityModel {
+  constructor(){
+    this.penalty = new Array(46).fill(0);  // 높을수록 인기 많음 → 감점
+    this._buildModel();
+  }
+  _buildModel(){
+    for(let n=1;n<=45;n++){
+      let pop = 0;
+      // ① 생일 편향
+      if(n<=12)      pop += 0.35;   // 월 번호 (강한 선호)
+      else if(n<=31) pop += 0.15;   // 일 번호 (중간 선호)
+      // ② 행운의 수 (한국 문화: 7,3,1,9 선호 / 4,13 기피)
+      if(n===7)      pop += 0.30;
+      if(n===3||n===1||n===9) pop += 0.15;
+      if(n===4||n===13||n===44) pop -= 0.15;  // 기피 → 오히려 비인기 = 보너스
+      // ③ 끝수 0 회피 (10,20,30,40은 덜 선택됨)
+      if(n%10===0)   pop -= 0.10;
+      // ④ 작은 수 전반적 선호 (선형 감소)
+      pop += Math.max(0, (23-n)/45 * 0.20);
+      this.penalty[n] = pop;
+    }
+    // 0~1 정규화
+    const vals = this.penalty.slice(1);
+    const mn=Math.min(...vals), mx=Math.max(...vals);
+    const range = mx-mn || 1;
+    for(let n=1;n<=45;n++)
+      this.penalty[n] = (this.penalty[n]-mn)/range;  // 0(비인기)~1(인기)
+  }
+  // 세트의 인기도 회피 점수: 비인기 번호가 많을수록 높은 점수
+  avoidanceScore(nums){
+    const avgPop = nums.reduce((s,n)=>s+this.penalty[n],0)/6;
+    return 1.0 - avgPop;  // 인기 낮은 조합 → 높은 점수
+  }
+}
+
+/* ── NetworkAnalyzer (동반출현 그래프 + 커뮤니티 탐지) ────────────────────── */
+/*
+ * 45개 번호를 노드, 동반출현 빈도를 간선 가중치로 놓으면 관계 네트워크가 됩니다.
+ * 간단한 탐욕적 커뮤니티 탐지(가중치 기반 연결 성분)로 번호를 그룹화하고,
+ * 5번째 알고리즘에서 각 커뮤니티에서 대표를 뽑아 구조적으로 다양한 조합을 생성합니다.
+ *
+ * 복잡한 Louvain 대신 경량 알고리즘을 쓰는 이유:
+ *  - 브라우저에서 실시간 실행되어야 함 (백테스트 중 수백 회 호출)
+ *  - 45노드 소규모 그래프에서 정교한 알고리즘의 이점이 제한적
+ *  - 교육 도구로서 원리 이해가 가능한 수준의 복잡도
+ */
+class NetworkAnalyzer {
+  constructor(engine, minEdgeWeight=0.02){
+    this.engine = engine;
+    this.nNodes = 45;     // 1~45
+    this.communities = []; // [{id, members:[번호], hub:번호}]
+    this.nodeComm = new Array(46).fill(-1);  // 번호 → 커뮤니티 id
+    this._build(minEdgeWeight);
+  }
+  _build(minW){
+    // 인접 행렬 → 간선 목록 (가중치 > 임계값)
+    const ps = this.engine.pair.pairScore;
+    const adj = Array.from({length:46},()=>[]);  // adj[n] = [{to, w}]
+    for(let a=1;a<=45;a++)
+      for(let b=a+1;b<=45;b++)
+        if(ps[a][b]>=minW){
+          adj[a].push({to:b, w:ps[a][b]});
+          adj[b].push({to:a, w:ps[a][b]});
+        }
+    // 탐욕적 커뮤니티 탐지: 가중치 합이 가장 높은 번호부터 시작,
+    // 이웃 중 미배정이면서 강한 연결이 있는 번호를 같은 커뮤니티에 흡수
+    const strength = new Array(46).fill(0);
+    for(let n=1;n<=45;n++)
+      strength[n] = adj[n].reduce((s,e)=>s+e.w,0);
+    const order = [...Array(45)].map((_,i)=>i+1)
+      .sort((a,b)=>strength[b]-strength[a]);
+    const assigned = new Array(46).fill(false);
+    let commId = 0;
+    for(const seed of order){
+      if(assigned[seed]) continue;
+      const comm = [seed];
+      assigned[seed] = true;
+      this.nodeComm[seed] = commId;
+      // 이웃을 가중치 내림차순으로 정렬하고, 상위 이웃 흡수
+      const neighbors = adj[seed]
+        .filter(e=>!assigned[e.to])
+        .sort((a,b)=>b.w-a.w);
+      // 커뮤니티 크기 제한: 최대 ~9개 (45/5)
+      const maxSize = Math.ceil(45 / 5);
+      for(const {to} of neighbors){
+        if(comm.length>=maxSize) break;
+        if(assigned[to]) continue;
+        // 흡수 조건: 기존 커뮤니티 멤버와의 평균 연결이 임계값 이상
+        const avgConn = comm.reduce((s,m)=>s+ps[m][to],0)/comm.length;
+        if(avgConn >= minW * 0.5){
+          comm.push(to);
+          assigned[to] = true;
+          this.nodeComm[to] = commId;
+        }
+      }
+      // 허브: 커뮤니티 내에서 강도(strength)가 가장 높은 번호
+      const hub = comm.reduce((best,n)=>strength[n]>strength[best]?n:best);
+      this.communities.push({id:commId, members:comm.sort((a,b)=>a-b), hub});
+      commId++;
+    }
+    // 미배정 노드를 가장 가까운 커뮤니티에 배정
+    for(let n=1;n<=45;n++){
+      if(assigned[n]) continue;
+      let bestComm=0, bestScore=-1;
+      for(const c of this.communities){
+        const sc = c.members.reduce((s,m)=>s+ps[n][m],0);
+        if(sc>bestScore){ bestScore=sc; bestComm=c.id; }
+      }
+      this.communities[bestComm].members.push(n);
+      this.communities[bestComm].members.sort((a,b)=>a-b);
+      this.nodeComm[n] = bestComm;
+      assigned[n] = true;
+    }
+  }
+  // 커뮤니티 요약 (UI용)
+  summary(){
+    return this.communities.map(c=>({
+      id:c.id, size:c.members.length,
+      hub:c.hub, members:c.members
+    }));
   }
 }
 
@@ -704,7 +869,7 @@ class FilterSystem {
 /* ── EnsembleGenerator ───────────────────────────────────────────────────── */
 class EnsembleGenerator {
   constructor(engine, geometric, rng){
-    this.engine=engine; this.geometric=geometric;
+    this.engine=engine; this.geometric=geometric; this.network=engine.network;
     this.rng = rng || makeRng(42);
     this.filter = new FilterSystem(engine);
     this.scores = engine.finalScores.slice();
@@ -734,6 +899,10 @@ class EnsembleGenerator {
     if(this.geometric){
       const c4=this._algoMultiCluster(count*4); all.push(...c4);
       meta.algos.push(['MultiCluster',c4.length]);
+    }
+    if(this.network && this.network.communities.length>=3){
+      const c5=this._algoNetworkComm(count*4); all.push(...c5);
+      meta.algos.push(['Network',c5.length]);
     }
     meta.attempts=this._attempts;
     meta.passRate=this._attempts>0? this._passed/this._attempts*100:0;
@@ -838,6 +1007,48 @@ class EnsembleGenerator {
     }
     return results;
   }
+  /* ── 알고리즘 5: 네트워크 커뮤니티 대표 선발 ──
+   * 동반출현 그래프의 각 커뮤니티에서 대표를 1~2명 뽑아 조합을 구성합니다.
+   * 기존 알고리즘이 "어떤 번호가 좋은가"에 집중한다면,
+   * 이 알고리즘은 "서로 다른 관계 그룹을 고루 대표하는 조합"을 만듭니다.
+   */
+  _algoNetworkComm(count){
+    const results=[];
+    const comms=this.network.communities.filter(c=>c.members.length>=2);
+    if(comms.length<3) return results;
+    const w=this._weights();
+    const maxIter=Math.min(count*20,80000);
+    for(let it=0; it<maxIter && results.length<count; it++){
+      const numsSet=new Set();
+      // 커뮤니티를 셔플해서 순서를 랜덤화
+      const order=[...comms];
+      for(let i=order.length-1;i>0;i--){
+        const j=this.rng.randint(0,i+1);
+        [order[i],order[j]]=[order[j],order[i]];
+      }
+      // 각 커뮤니티에서 점수 기반으로 1~2개 선택
+      for(const comm of order){
+        if(numsSet.size>=6) break;
+        const avail=comm.members.filter(n=>!numsSet.has(n));
+        if(!avail.length) continue;
+        const cw=avail.map(n=>w[n-1]);
+        const pick=this.rng.weightedSampleNoReplace(avail,cw,
+                     Math.min(numsSet.size<4?2:1, avail.length));
+        if(pick) for(const n of pick) numsSet.add(n);
+      }
+      // 부족하면 전체 점수 기반으로 채움
+      if(numsSet.size<6){
+        const items=[...Array(45)].map((_,i)=>i+1).filter(n=>!numsSet.has(n));
+        const tw=items.map(n=>w[n-1]);
+        const fill=this.rng.weightedSampleNoReplace(items,tw,6-numsSet.size);
+        if(fill) for(const n of fill) numsSet.add(n);
+      }
+      if(numsSet.size===6)
+        this._tryAdd([...numsSet].sort((a,b)=>a-b),'network',results);
+    }
+    return results;
+  }
+
   _scoreCandidates(candidates){
     const seen=new Set(), unique=[], rawNum=[], rawPair=[];
     for(const cand of candidates){
@@ -868,15 +1079,17 @@ class EnsembleGenerator {
       const balance = NU.clip(1/(1+NU.variance(zones)),0,1);
       const clusterBonus = this.geometric? this.geometric.clusterBonus(nums):0.5;
       const algoBonus = cand.algo==='balanced'?1.0:0.8;
-      const total = sumScore*0.12 + acScore*0.12 + numScore*0.28
-                  + pairScore*0.18 + balance*0.13
+      const popAvoid = this.engine.popularity.avoidanceScore(nums);
+      const total = sumScore*0.10 + acScore*0.10 + numScore*0.24
+                  + pairScore*0.15 + balance*0.10
                   + clusterBonus*this.engine.config.CLUSTER_BONUS_WEIGHT
-                  + algoBonus*0.07;
+                  + algoBonus*0.06
+                  + popAvoid*this.engine.config.POPULARITY_WEIGHT;
       cand.stat={ sum:s, ac,
         odd:nums.filter(x=>x%2===1).length,
         high:nums.filter(x=>x>=23).length,
         prime:nums.filter(x=>PRIME_NUMBERS.has(x)).length,
-        clusterBonus,
+        clusterBonus, popAvoid,
         clusterId: this.geometric? this.geometric.clusterId(nums):-1 };
       cand.totalScore=Math.round(total*1e6)/1e6;
       return cand;
@@ -1141,7 +1354,8 @@ class PredictionTracker {
 /* ── 내보내기 (node/browser 겸용) ────────────────────────────────────────── */
 const LottoEngine = { NU, makeRng, decodeCsvBuffer, loadHistoryEx,
   defaultConfig, DataEngine, GeometricAnalyzer, FilterSystem,
-  EnsembleGenerator, bootstrapMeanCI, nullDistributionVerdict,
+  EnsembleGenerator, PopularityModel, NetworkAnalyzer,
+  bootstrapMeanCI, nullDistributionVerdict,
   runBacktest, PredictionTracker,
   PRIME_NUMBERS, RANDOM_EXPECTED, ENGINE_VERSION };
 if(typeof module!=='undefined' && module.exports) module.exports=LottoEngine;
@@ -1211,8 +1425,9 @@ function onData(text, filename){
   generateSets(false);
 
   renderBoard();
+  renderNetwork();
   renderLog();
-  ['secTrack','secPredict','secBoard','secBacktest','secLog']
+  ['secTrack','secPredict','secBoard','secNetwork','secBacktest','secLog']
     .forEach(id=>$(id).classList.remove('hide'));
 }
 
@@ -1266,7 +1481,8 @@ function generateSets(isRegen){
     <div class="setrow">
       <div class="no">S${i+1}</div>
       <div class="balls">${s.nums.map(n=>ballHtml(n)).join('')}</div>
-      <div class="meta">합 ${s.stat.sum} · AC ${s.stat.ac} · 홀 ${s.stat.odd} · C${s.stat.clusterId}<br>
+      <div class="meta">합 ${s.stat.sum} · AC ${s.stat.ac} · 홀 ${s.stat.odd} · C${s.stat.clusterId}
+        <span class="pop-badge ${s.stat.popAvoid>0.65?'high':s.stat.popAvoid>0.5?'mid':'low'}">${s.stat.popAvoid>0.65?'비인기↑':s.stat.popAvoid>0.5?'보통':'인기↑'}</span><br>
         점수 ${s.totalScore.toFixed(4)}
         <button data-copy="${s.nums.join(', ')}" style="padding:3px 9px;font-size:11px;margin-left:8px">복사</button>
       </div>
@@ -1309,7 +1525,26 @@ function renderBoard(){
   }).join('');
 }
 
-/* ── 백테스트 ── */
+/* ── 네트워크 커뮤니티 ── */
+function renderNetwork(){
+  const net=state.engine.network;
+  const comms=net.communities;
+  $('networkGrid').innerHTML = comms.map(c=>{
+    const balls=c.members.map(n=>{
+      const isHub=n===c.hub;
+      return `<div class="ball ${zoneClass(n)}" style="${isHub?'box-shadow:inset -2px -3px 6px rgba(0,0,0,.28),0 0 12px color-mix(in srgb,var(--bc) 60%,transparent),0 2px 4px rgba(0,0,0,.35)':''}"><span>${n}</span></div>`;
+    }).join('');
+    return `<div class="comm-card">
+      <div class="ch"><span class="cid">G${c.id}</span>
+        <span class="hub">허브 ${c.hub} · ${c.members.length}개 번호</span></div>
+      <div class="balls">${balls}</div>
+    </div>`;
+  }).join('');
+}
+
+
+
+
 $('btnBacktest').addEventListener('click', async ()=>{
   const btn=$('btnBacktest'); btn.disabled=true;
   const prog=$('btProgress'); prog.classList.remove('hide');
@@ -1326,7 +1561,7 @@ $('btnBacktest').addEventListener('click', async ()=>{
         await new Promise(r=>setTimeout(r,0));
       }});
     $('btStatus').textContent=`완료 — ${res.testedRounds}회차 × 5세트 = ${res.totalPredictions}세트 검증`;
-    renderBtResult(res);
+    if(res) renderBtResult(res); else $('btStatus').textContent='검증 구간 부족';
   }catch(err){ $('btStatus').textContent='오류: '+err.message; }
   btn.disabled=false;
 });
